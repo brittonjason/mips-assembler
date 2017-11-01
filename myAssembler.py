@@ -18,17 +18,25 @@ def print_error(line_number, faulty_instr):
 
 def check_errors():
     error = False
-    line_number = 0
+    line_number = 1
 
     for line in input_file:
-        line_number += 1
-        if line.rstrip()[-1] == ':':
-            # print("label", line)
-            pass
-        elif line[0] == '\t':
-            # print("instruction", line)
-            pass
-        else:
+        try:
+            if line.rstrip()[-1] == ':':
+                label_locations[line.split(':')[0]] = line_number
+            elif line[0] == '\t' and len(line.strip().split('\t')) == 2:
+                a = [x.strip() for x in line.strip().split('\t')[1].split(',')]
+                for i in a:
+                    if '(' in i:
+                        i = i.split('(')[1][:-1]
+                    if command.register_to_bin(i) == 'xxxxx' and i[0] == '$':
+                        print_error(line_number, line)
+                        error = True
+                line_number += 1
+            else:
+                print_error(line_number, line)
+                error = True
+        except:
             print_error(line_number, line)
             error = True
 
@@ -36,14 +44,14 @@ def check_errors():
 
 
 def read_assembly():
-    line_number = 0
+    line_number = 1
 
     for line in input_file:
-        line_number += 1
         if line.rstrip()[-1] == ':':
-            print("label", line)
+            label_locations[line.split(':')[0]] = line_number
         elif line[0] == '\t':
             parse_instr(line, line_number)
+            line_number += 1
         else:
             print("Error not caught")
             raise
@@ -60,8 +68,8 @@ def parse_instr(instr, line_number):
     elif comm == 'addu': out_file.write(command.maddu(param) + '\n')
     elif comm == 'and': out_file.write(command.mand(param) + '\n')
     elif comm == 'andi': out_file.write(command.mandi(param) + '\n')
-    elif comm == 'beq': out_file.write(command.mbeq(param) + '\n')
-    elif comm == 'bne': out_file.write(command.mbne(param) + '\n')
+    elif comm == 'beq': out_file.write(command.mbeq(param, line_number, label_locations) + '\n')
+    elif comm == 'bne': out_file.write(command.mbne(param, line_number, label_locations) + '\n')
     elif comm == 'jr': out_file.write(command.mjr(param) + '\n')
     elif comm == 'lbu': out_file.write(command.mlbu(param) + '\n')
     elif comm == 'lhu': out_file.write(command.mlhu(param) + '\n')
@@ -86,6 +94,7 @@ def parse_instr(instr, line_number):
 
 
 start_file = input_file.tell()
+label_locations = {}
 
 if not check_errors():
     input_file.seek(start_file)

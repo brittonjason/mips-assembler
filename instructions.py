@@ -95,12 +95,32 @@ def mandi(params):
     return hex(int(machine_bin, 2))[2:].zfill(8)
 
 
-def mbeq(params):
-    return "not implemented"
+def mbeq(params, line_number, label_locations):
+    a = [x.strip() for x in params.split(',')]
+    opcode = "000100"
+    rs = register_to_bin(a[0])
+    rt = register_to_bin(a[1])
+    label_loc = int(label_locations[a[2]])
+    offset = label_loc - line_number
+    if offset < 0:
+        offset = 65536 + offset
+    immediate = "{0:016b}".format(offset)
+    machine_bin = opcode + rs + rt + immediate
+    return hex(int(machine_bin, 2))[2:].zfill(8)
 
 
-def mbne(params):
-    return "not implemented"
+def mbne(params, line_number, label_locations):
+    a = [x.strip() for x in params.split(',')]
+    opcode = "000101"
+    rs = register_to_bin(a[0])
+    rt = register_to_bin(a[1])
+    label_loc = int(label_locations[a[2]])
+    offset = label_loc - line_number
+    if offset < 0:
+        offset = 65536 + offset
+    immediate = "{0:016b}".format(offset)
+    machine_bin = opcode + rs + rt + immediate
+    return hex(int(machine_bin, 2))[2:].zfill(8)
 
 
 def mjr(params):
